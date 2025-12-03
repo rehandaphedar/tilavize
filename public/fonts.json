@@ -1,0 +1,16 @@
+[
+	{
+		"family": "Hafs",
+		"url": "hafs.ttf"
+	},
+	{
+		"family": "EB Garamond",
+		"url": "eb-garamond.ttf",
+		"style": "normal"
+	},
+	{
+		"family": "EB Garamond",
+		"url": "eb-garamond-italic.ttf",
+		"style": "italic"
+	}
+]

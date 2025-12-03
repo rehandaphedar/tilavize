@@ -1,15 +1,13 @@
-// See all configuration options: https://remotion.dev/docs/config
-// Each option also is available as a CLI flag: https://remotion.dev/docs/cli
-
-// Note: When using the Node.JS APIs, the config file doesn't apply. Instead, pass options directly to the APIs
-// All configuration options: https://remotion.dev/docs/config
-
 import { Config } from "@remotion/cli/config";
-import { enableTailwind } from '@remotion/tailwind-v4';
+import { enableTailwind } from "@remotion/tailwind-v4";
 
-Config.setVideoImageFormat("png");
-Config.setPixelFormat("yuva444p10le");
-Config.setCodec("prores");
-Config.setProResProfile("4444");
-Config.setMuted(true);
 Config.overrideWebpackConfig(enableTailwind);
+
+Config.setChromiumDisableWebSecurity(true);
+Config.setChromiumIgnoreCertificateErrors(true);
+
+Config.setCodec("vp9");
+Config.setPixelFormat("yuva420p");
+Config.setVideoImageFormat("png");
+Config.setAudioCodec("opus");
+Config.setHardwareAcceleration("if-possible");
