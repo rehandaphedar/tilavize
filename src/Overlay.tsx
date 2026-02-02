@@ -1,50 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { AbsoluteFill, delayRender, Html5Audio } from "remotion";
-import { OverlayMetadata, Segment } from "./schemas";
+import { OverlayMetadata, Segment, TimingPhrase } from "./schemas";
 import { loadFonts, useActiveTiming } from "./utils";
+import clsx from "clsx";
 
-const hafsFontFamily = "Hafs";
-const ebGaramondFontFamily = "EB Garamond";
-
-const highlight: React.CSSProperties = {
-	textShadow: `
-      0 0 16px rgba(145, 215, 227, 0.25),
-      0 0 8px rgba(145, 215, 227, 0.6),
-      0 0 2px rgba(145, 215, 227, 1),
-      -0.5px -0.5px 0.8px rgba(110, 115, 141, 0.8)
-    `,
+const Phrase: React.FC<{ phraseKey: string; chapterNumber: number }> = ({
+	phraseKey,
+	chapterNumber,
+}) => {
+	return (
+		<div>
+			{phraseKey} {chapterNumber}
+		</div>
+	);
 };
 
-// const STYLES: Record<string, React.CSSProperties> = {
-// 	container: {
-// 		fontFamily: hafsFontFamily,
-// 		fontSize: 64,
-// 		textAlign: "center",
-// 		lineHeight: 1.5,
-// 	},
-// 	phrase: {
-// 		fontFamily: hafsFontFamily,
-// 		fontSize: 64,
-// 	},
-// 	translation: {
-// 		// fontWeight: "bold" as const,
-// 		fontFamily: ebGaramondFontFamily,
-// 		fontSize: 40,
-// 		textAlign: "center",
-// 		// color: "#4290F5",
-// 		marginTop: 20,
-// 	},
-// 	highlight: {
-// 		color: "#4290F5",
-// 	},
-// 	segmentActive: {
-// 		color: "var(--catppuccin-color-sapphire)",
-// 	},
-// };
-
-const PhraseDisplay: React.FC<{ text: string }> = () => <div></div>;
-
-const Word: React.FC<{
+const Arabic: React.FC<{
 	chunk: Segment[];
 	isLastChunk: boolean;
 	activeKey: string;
@@ -53,7 +24,7 @@ const Word: React.FC<{
 	words: Record<string, { text: string }>;
 }> = ({ chunk, isLastChunk, activeKey: key, verseKey, wordNumber, words }) => {
 	return (
-		<div style={undefined}>
+		<div style={undefined} className="leading-[1.5]">
 			{chunk.map((segment, segIdx) => {
 				const { start, end } = segment.word_range;
 				const isSegmentActive = wordNumber >= start && wordNumber <= end;
@@ -67,7 +38,6 @@ const Word: React.FC<{
 				return (
 					<span
 						key={`${verseKey}-seg-${segIdx}`}
-						style={isSegmentActive ? undefined : undefined}
 						className={isSegmentActive ? "text-ctp-sapphire" : ""}
 						// className="rounded-lg"
 					>
@@ -79,7 +49,13 @@ const Word: React.FC<{
 
 							return (
 								<React.Fragment key={lookupKey}>
-									<span style={isHighlighted ? highlight : undefined}>
+									<span
+										style={isHighlighted ? undefined : undefined}
+										className={clsx(
+											"font-[Hafs]",
+											isHighlighted && "highlight",
+										)}
+									>
 										{wordText}
 									</span>{" "}
 								</React.Fragment>
@@ -105,7 +81,7 @@ const Translation: React.FC<{
 	wordNumber: number;
 }> = ({ chunk, wordNumber: word }) => {
 	return (
-		<div style={undefined}>
+		<div className="text-[40px] font-[EB_Garamond] mt-[20px]">
 			{chunk.map((segment, idx) => {
 				const { start, end } = segment.word_range;
 				const isSegmentActive = word >= start && word <= end;
@@ -113,7 +89,7 @@ const Translation: React.FC<{
 				return (
 					<span
 						key={`trans-${idx}`}
-						style={isSegmentActive ? undefined : undefined}
+						className={clsx(isSegmentActive && "text-ctp-sapphire")}
 					>
 						{segment.t}{" "}
 					</span>
@@ -123,8 +99,6 @@ const Translation: React.FC<{
 	);
 };
 
-// --- MAIN COMPONENT ---
-
 export const Overlay: React.FC<OverlayMetadata> = ({
 	audio_url,
 	timings,
@@ -133,48 +107,55 @@ export const Overlay: React.FC<OverlayMetadata> = ({
 	fonts_path,
 }) => {
 	const [handle] = useState(() => delayRender());
-
 	useEffect(() => {
 		loadFonts(fonts_path, handle);
 	}, [fonts_path, handle]);
+
 	const activeTiming = useActiveTiming(timings);
+	if (!activeTiming) return null;
 
-	if (!activeTiming)
-		return <AbsoluteFill className="bg-ctp-base text-ctp-text "></AbsoluteFill>;
-
-	if (activeTiming.type == "phrase") {
-		return <PhraseDisplay text={activeTiming.key} />;
-	}
-
-	if (activeTiming.chunkIndex == null || activeTiming.isLastChunk == null)
-		return <AbsoluteFill className="bg-ctp-base text-ctp-text "></AbsoluteFill>;
-
-	const [chapterNumberStr, verseNumberStr, wordNumberStr] =
-		activeTiming.key.split(":");
-	const wordNumber = Number(wordNumberStr);
-	const verseKey = `${chapterNumberStr}:${verseNumberStr}`;
-
-	const chunk = translation[verseKey].chunks[activeTiming.chunkIndex];
-
-	return (
-		<AbsoluteFill className="bg-ctp-base text-ctp-text @container">
-			<div className="m-auto w-[40%] px-10">
-				<Word
-					chunk={chunk}
-					activeKey={activeTiming.key}
-					isLastChunk={activeTiming.isLastChunk}
-					verseKey={verseKey}
-					wordNumber={wordNumber}
-					words={words}
+	switch (activeTiming.type) {
+		case "phrase":
+			// TODO: Implement Phrase
+			return (
+				<Phrase
+					phraseKey={activeTiming.key}
+					chapterNumber={activeTiming.chapterNumber || 0}
 				/>
+			);
+		case "word":
+			if (activeTiming.chunkIndex == null || activeTiming.isLastChunk == null)
+				return (
+					<AbsoluteFill className="bg-ctp-base text-ctp-text "></AbsoluteFill>
+				);
 
-				<div className="w-fit mx-auto my-8 py-2 px-4 text-ctp-base bg-ctp-mauve font-bold text-2xl font-[Roboto]">
-					{activeTiming.key}
-				</div>
+			const [chapterNumberStr, verseNumberStr, wordNumberStr] =
+				activeTiming.key.split(":");
+			const wordNumber = Number(wordNumberStr);
+			const verseKey = `${chapterNumberStr}:${verseNumberStr}`;
 
-				<Translation chunk={chunk} wordNumber={wordNumber} />
-			</div>
-			<Html5Audio src={audio_url} />
-		</AbsoluteFill>
-	);
+			const chunk = translation[verseKey].chunks[activeTiming.chunkIndex];
+
+			return (
+				<AbsoluteFill className="bg-ctp-base text-ctp-text text-[64px] font-[Hafs] text-center">
+					<div className="m-auto w-[60%] px-10">
+						<Arabic
+							chunk={chunk}
+							activeKey={activeTiming.key}
+							isLastChunk={activeTiming.isLastChunk}
+							verseKey={verseKey}
+							wordNumber={wordNumber}
+							words={words}
+						/>
+
+						<div className="w-fit mx-auto my-8 py-2 px-4 text-ctp-base bg-ctp-mauve font-bold text-2xl font-[Roboto]">
+							{activeTiming.key}
+						</div>
+
+						<Translation chunk={chunk} wordNumber={wordNumber} />
+					</div>
+					<Html5Audio src={audio_url} />
+				</AbsoluteFill>
+			);
+	}
 };
