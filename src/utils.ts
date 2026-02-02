@@ -7,7 +7,7 @@ import {
 import {
 	OverlayMetadata,
 	Segment,
-	Timing,
+	BaseTiming,
 	TranslationVerse,
 	Word,
 } from "./schemas";
@@ -24,7 +24,7 @@ export const calculateMetadata: CalculateMetadataFunction<
 		fetch(staticFile(props.translation_path)),
 	]);
 
-	const rawTimings: Array<Timing> = await timingsData.json();
+	const rawTimings: Array<BaseTiming> = await timingsData.json();
 	const fullWords: Record<string, Word> = await wordsData.json();
 	const fullTranslation: Record<string, TranslationVerse> =
 		await translationData.json();
@@ -65,7 +65,7 @@ export const calculateMetadata: CalculateMetadataFunction<
 		);
 	}
 
-	const timings: Timing[] = rawTimings.map((timing) => {
+	const timings: BaseTiming[] = rawTimings.map((timing) => {
 		timing.start *= props.fps / 1000;
 		timing.end *= props.fps / 1000;
 
@@ -149,7 +149,7 @@ const generateChunks = (segments: Segment[] = [], maxWords: number) => {
 	return chunks;
 };
 
-export const useActiveTiming = (timings: Timing[]) => {
+export const useActiveTiming = (timings: BaseTiming[]) => {
 	const frame = useCurrentFrame();
 
 	return useMemo(() => {

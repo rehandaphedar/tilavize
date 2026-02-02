@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const timingSchema = z.object({
+const baseTimingSchema = z.object({
 	start: z.number(),
 	end: z.number(),
 	type: z.string(),
@@ -45,19 +45,20 @@ export const overlayInputPropsSchema = z.object({
 });
 
 const overlayMetadataSchema = overlayInputPropsSchema.extend({
-	timings: z.array(timingSchema),
+	timings: z.array(baseTimingSchema),
 	words: z.record(wordSchema),
 	translation: z.record(translationVerseSchema),
 });
 
-export type Timing = z.infer<typeof timingSchema>;
+export type BaseTiming = z.infer<typeof baseTimingSchema>;
 export type Word = z.infer<typeof wordSchema>;
 export type Segment = z.infer<typeof segmentSchema>;
 export type TranslationVerse = z.infer<typeof translationVerseSchema>;
 
 export type OverlayMetadata = z.infer<typeof overlayMetadataSchema>;
 
-export type TimingWord = Timing & {
+export type TimingWord = BaseTiming & {
+	type: "word";
 	verseKey: string;
 	chapterNumber: number;
 	verseNumber: number;
@@ -66,8 +67,9 @@ export type TimingWord = Timing & {
 	isLastChunk: boolean;
 };
 
-export type TimingPhrase = Timing & {
+export type TimingPhrase = BaseTiming & {
+	type: "phrase";
 	chapterNumber: number;
 };
 
-export type EnrichedTiming = TimingWord | TimingPhrase;
+export type Timing = TimingWord | TimingPhrase;
