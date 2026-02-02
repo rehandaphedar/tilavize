@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AbsoluteFill, delayRender, Html5Audio } from "remotion";
-import { OverlayMetadata, Segment, TimingPhrase } from "./schemas";
+import { OverlayMetadata, Segment, Timing } from "./schemas";
 import { loadFonts, useActiveTiming } from "./utils";
 import clsx from "clsx";
 
@@ -22,7 +22,7 @@ const Arabic: React.FC<{
 	verseKey: string;
 	wordNumber: number;
 	words: Record<string, { text: string }>;
-}> = ({ chunk, isLastChunk, activeKey: key, verseKey, wordNumber, words }) => {
+}> = ({ chunk, isLastChunk, activeKey, verseKey, wordNumber, words }) => {
 	return (
 		<div style={undefined} className="leading-[1.5]">
 			{chunk.map((segment, segIdx) => {
@@ -44,8 +44,8 @@ const Arabic: React.FC<{
 						{indices.map((idx) => {
 							const lookupKey = `${verseKey}:${idx}`;
 							const wordText = words[lookupKey]?.text || "";
-							const isHighlighted = lookupKey === key;
-							console.log(lookupKey, key);
+							const isHighlighted = lookupKey === activeKey;
+							console.log(lookupKey, activeKey);
 
 							return (
 								<React.Fragment key={lookupKey}>
@@ -111,12 +111,12 @@ export const Overlay: React.FC<OverlayMetadata> = ({
 		loadFonts(fonts_path, handle);
 	}, [fonts_path, handle]);
 
-	const activeTiming = useActiveTiming(timings);
-	if (!activeTiming) return null;
+	const activeTimingIndex = useActiveTiming(timings);
+	const activeTiming = timings[activeTimingIndex] as Timing;
+	if (activeTimingIndex == -1 || !activeTiming) return null;
 
 	switch (activeTiming.type) {
 		case "phrase":
-			// TODO: Implement Phrase
 			return (
 				<Phrase
 					phraseKey={activeTiming.key}

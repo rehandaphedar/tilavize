@@ -57,7 +57,9 @@ export type TranslationVerse = z.infer<typeof translationVerseSchema>;
 
 export type OverlayMetadata = z.infer<typeof overlayMetadataSchema>;
 
-export type TimingWord = BaseTiming & {
+type BaseTimingWithoutType = Omit<BaseTiming, "type">;
+
+export type TimingWord = BaseTimingWithoutType & {
 	type: "word";
 	verseKey: string;
 	chapterNumber: number;
@@ -67,7 +69,7 @@ export type TimingWord = BaseTiming & {
 	isLastChunk: boolean;
 };
 
-export type TimingPhrase = BaseTiming & {
+export type TimingPhrase = BaseTimingWithoutType & {
 	type: "phrase";
 	chapterNumber: number;
 };

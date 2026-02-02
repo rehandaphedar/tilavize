@@ -153,7 +153,7 @@ export const useActiveTiming = (timings: BaseTiming[]) => {
 	const frame = useCurrentFrame();
 
 	return useMemo(() => {
-		if (!timings || timings.length === 0) return null;
+		if (!timings || timings.length === 0) return -1;
 
 		let low = 0;
 		let high = timings.length - 1;
@@ -181,7 +181,7 @@ export const useActiveTiming = (timings: BaseTiming[]) => {
 			}
 		}
 
-		return timings[foundIndex];
+		return foundIndex;
 	}, [frame, timings]);
 };
 
