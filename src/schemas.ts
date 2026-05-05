@@ -58,8 +58,9 @@ export const videoInputPropsSchema = z.object({
 
 const videoMetadataSchema = videoInputPropsSchema.extend({
 	timings: z.array(baseTimingSchema),
-	words: z.record(wordSchema),
-	translation: z.record(translationVerseSchema),
+	words: z.record(z.string(), wordSchema),
+	translation: z.record(z.string(), translationVerseSchema),
+	metadata: z.record(z.string(), metadataChapterSchema),
 });
 
 export type BaseTiming = z.infer<typeof baseTimingSchema>;
