@@ -1,0 +1,36 @@
+[
+	{
+		"family": "Hafs",
+		"url": "fonts/hafs.ttf"
+	},
+	{
+		"family": "EB Garamond",
+		"url": "fonts/eb_garamond.ttf",
+		"style": "normal"
+	},
+	{
+		"family": "EB Garamond",
+		"url": "fonts/eb_garamond-italic.ttf",
+		"style": "italic"
+	},
+	{
+		"family": "Scheherazade New",
+		"url": "fonts/scheherazade_new.ttf",
+		"weight": 400
+	},
+	{
+		"family": "Scheherazade New",
+		"url": "fonts/scheherazade_new-medium.ttf",
+		"weight": 500
+	},
+	{
+		"family": "Scheherazade New",
+		"url": "fonts/scheherazade_new-semibold.ttf",
+		"weight": 600
+	},
+	{
+		"family": "Scheherazade New",
+		"url": "fonts/scheherazade_new-bold.ttf",
+		"weight": 700
+	}
+]
