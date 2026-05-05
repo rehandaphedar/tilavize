@@ -49,9 +49,6 @@ export const calculateMetadata: CalculateMetadataFunction<
 		);
 	}
 
-	// TODO: Normalise/Continueize rawTimings?
-	// Is normalise = continueize or something different? i think they are the same
-
 	const timings: Timing[] = rawTimings.map((timing): Timing => {
 		timing.start *= props.fps / 1000;
 		timing.end *= props.fps / 1000;
