@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 const baseTimingSchema = z.object({
-	start: z.number(),
-	end: z.number(),
+	start: z.number().int(),
+	end: z.number().int(),
 	type: z.enum(["word", "phrase"]),
 	key: z.string(),
 });
