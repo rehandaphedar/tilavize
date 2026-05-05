@@ -105,7 +105,6 @@ export const calculateMetadata: CalculateMetadataFunction<
 	});
 
 	for (const [timingIndex, timing] of timings.entries()) {
-		console.log(timingIndex, timing);
 		switch (timing.type) {
 			case "phrase":
 				const previousWord =
