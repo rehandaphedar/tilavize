@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"description": "A program to generate videos of Quran recitations.",
 	"repository": {},
-	"license": "UNLICENSED",
+	"license": "AGPL-3.0-only",
 	"dependencies": {
 		"@remotion/cli": "4.0.379",
 		"@remotion/fonts": "^4.0.379",
