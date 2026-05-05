@@ -3,7 +3,7 @@ import { z } from "zod";
 const baseTimingSchema = z.object({
 	start: z.number(),
 	end: z.number(),
-	type: z.string(),
+	type: z.enum(["word", "phrase"]),
 	key: z.string(),
 });
 
@@ -32,7 +32,7 @@ const translationVerseSchema = z.object({
 	chunks: z.array(z.array(segmentSchema)),
 });
 
-export const overlayInputPropsSchema = z.object({
+export const videoInputPropsSchema = z.object({
 	audio_url: z.string(),
 	timings_url: z.string(),
 	words_path: z.string(),
@@ -44,7 +44,7 @@ export const overlayInputPropsSchema = z.object({
 	height: z.number().int(),
 });
 
-const overlayMetadataSchema = overlayInputPropsSchema.extend({
+const videoMetadataSchema = videoInputPropsSchema.extend({
 	timings: z.array(baseTimingSchema),
 	words: z.record(wordSchema),
 	translation: z.record(translationVerseSchema),
@@ -55,11 +55,9 @@ export type Word = z.infer<typeof wordSchema>;
 export type Segment = z.infer<typeof segmentSchema>;
 export type TranslationVerse = z.infer<typeof translationVerseSchema>;
 
-export type OverlayMetadata = z.infer<typeof overlayMetadataSchema>;
+export type VideoMetadata = z.infer<typeof videoMetadataSchema>;
 
-type BaseTimingWithoutType = Omit<BaseTiming, "type">;
-
-export type TimingWord = BaseTimingWithoutType & {
+export type TimingWord = BaseTiming & {
 	type: "word";
 	verseKey: string;
 	chapterNumber: number;
@@ -69,9 +67,10 @@ export type TimingWord = BaseTimingWithoutType & {
 	isLastChunk: boolean;
 };
 
-export type TimingPhrase = BaseTimingWithoutType & {
+export type TimingPhrase = BaseTiming & {
 	type: "phrase";
-	chapterNumber: number;
+	previousWord: TimingWord | null;
+	nextWord: TimingWord | null;
 };
 
 export type Timing = TimingWord | TimingPhrase;

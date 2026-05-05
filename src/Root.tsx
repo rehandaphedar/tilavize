@@ -1,20 +1,20 @@
 import "./index.css";
 import { Composition } from "remotion";
-import { Overlay } from "./Overlay";
+import { Video } from "./Video";
 import { calculateMetadata } from "./utils";
-import { overlayInputPropsSchema } from "./schemas";
+import { videoInputPropsSchema } from "./schemas";
 
 export const RemotionRoot: React.FC = () => {
 	return (
 		<>
 			<Composition
-				id="Overlay"
-				component={Overlay}
+				id="Video"
+				component={Video}
 				durationInFrames={30}
 				fps={30}
 				width={1920}
 				height={1080}
-				schema={overlayInputPropsSchema}
+				schema={videoInputPropsSchema}
 				defaultProps={{
 					audio_url: "http://localhost:8000/001001.mp3",
 					timings_url: "http://localhost:8000/001001.json",

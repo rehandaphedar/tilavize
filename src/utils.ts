@@ -5,7 +5,7 @@ import {
 	useCurrentFrame,
 } from "remotion";
 import {
-	OverlayMetadata,
+	VideoMetadata,
 	Segment,
 	BaseTiming,
 	TranslationVerse,
@@ -16,7 +16,7 @@ import { useMemo } from "react";
 import { loadFont } from "@remotion/fonts";
 
 export const calculateMetadata: CalculateMetadataFunction<
-	OverlayMetadata
+	VideoMetadata
 > = async ({ props }) => {
 	const [timingsData, wordsData, translationData] = await Promise.all([
 		fetch(props.timings_url),
