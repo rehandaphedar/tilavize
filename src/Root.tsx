@@ -18,9 +18,10 @@ export const RemotionRoot: React.FC = () => {
 				defaultProps={{
 					audio_url: "http://localhost:8000/001001.mp3",
 					timings_url: "http://localhost:8000/001001.json",
-					words_path: "qpc-hafs-word-by-word.json",
-					translation_path: "en-sahih-international-simple.json",
-					fonts_path: "fonts.json",
+					words_path: "data/qpc-hafs-word-by-word.json",
+					translation_path: "data/en-sahih-international-simple.json",
+					metadata_path: "data/quran-metadata-surah-name.json",
+					fonts_path: "fonts/index.json",
 					max_words: 12,
 					fps: 30,
 					width: 1920,
@@ -28,6 +29,7 @@ export const RemotionRoot: React.FC = () => {
 					timings: [],
 					words: {},
 					translation: {},
+					metadata: {},
 				}}
 				calculateMetadata={calculateMetadata}
 			/>

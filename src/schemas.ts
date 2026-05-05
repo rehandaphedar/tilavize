@@ -32,11 +32,23 @@ const translationVerseSchema = z.object({
 	chunks: z.array(z.array(segmentSchema)),
 });
 
+const metadataChapterSchema = z.object({
+	id: z.number().int(),
+	name: z.string(),
+	name_simple: z.string(),
+	name_arabic: z.string(),
+	revelation_order: z.number().int(),
+	revelation_place: z.string(),
+	verses_count: z.number().int(),
+	bismillah_pre: z.boolean(),
+});
+
 export const videoInputPropsSchema = z.object({
 	audio_url: z.string(),
 	timings_url: z.string(),
 	words_path: z.string(),
 	translation_path: z.string(),
+	metadata_path: z.string(),
 	fonts_path: z.string(),
 	max_words: z.number().int(),
 	fps: z.number(),
@@ -54,6 +66,7 @@ export type BaseTiming = z.infer<typeof baseTimingSchema>;
 export type Word = z.infer<typeof wordSchema>;
 export type Segment = z.infer<typeof segmentSchema>;
 export type TranslationVerse = z.infer<typeof translationVerseSchema>;
+export type MetadataChapter = z.infer<typeof metadataChapterSchema>;
 
 export type VideoMetadata = z.infer<typeof videoMetadataSchema>;
 

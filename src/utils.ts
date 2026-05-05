@@ -1,109 +1,142 @@
+import { useMemo } from "react";
 import {
 	CalculateMetadataFunction,
 	continueRender,
 	staticFile,
 	useCurrentFrame,
 } from "remotion";
+import { ALL_FORMATS, Input, UrlSource } from "mediabunny";
+import { loadFont } from "@remotion/fonts";
+
 import {
 	VideoMetadata,
 	Segment,
 	BaseTiming,
 	TranslationVerse,
 	Word,
+	Timing,
+	TimingWord,
+	TimingPhrase,
+	MetadataChapter,
 } from "./schemas";
-import { ALL_FORMATS, Input, UrlSource } from "mediabunny";
-import { useMemo } from "react";
-import { loadFont } from "@remotion/fonts";
 
 export const calculateMetadata: CalculateMetadataFunction<
 	VideoMetadata
 > = async ({ props }) => {
-	const [timingsData, wordsData, translationData] = await Promise.all([
-		fetch(props.timings_url),
-		fetch(staticFile(props.words_path)),
-		fetch(staticFile(props.translation_path)),
-	]);
+	const [timingsData, wordsData, translationData, metadataData] =
+		await Promise.all([
+			fetch(props.timings_url),
+			fetch(staticFile(props.words_path)),
+			fetch(staticFile(props.translation_path)),
+			fetch(staticFile(props.metadata_path)),
+		]);
 
-	const rawTimings: Array<BaseTiming> = await timingsData.json();
+	const rawTimings: BaseTiming[] = await timingsData.json();
 	const fullWords: Record<string, Word> = await wordsData.json();
 	const fullTranslation: Record<string, TranslationVerse> =
 		await translationData.json();
+	const fullMetadata: Record<string, MetadataChapter> =
+		await metadataData.json();
 
 	const words: Record<string, Word> = {};
 	const translation: Record<string, TranslationVerse> = {};
+	const metadata: Record<string, MetadataChapter> = {};
+
+	for (const verseKey in fullTranslation) {
+		fullTranslation[verseKey].chunks = generateChunks(
+			fullTranslation[verseKey].segments,
+			props.max_words,
+		);
+	}
 
 	// TODO: Normalise/Continueize rawTimings?
+	// Is normalise = continueize or something different? i think they are the same
 
-	for (const timing of rawTimings) {
+	const timings: Timing[] = rawTimings.map((timing): Timing => {
+		timing.start *= props.fps / 1000;
+		timing.end *= props.fps / 1000;
+
 		switch (timing.type) {
-			case "word": {
-				const wordKey = timing.key;
+			case "phrase":
+				return {
+					...timing,
+					type: timing.type,
+					previousWord: null,
+					nextWord: null,
+				} satisfies TimingPhrase;
+			case "word":
 				const [chapterNumberStr, verseNumberStr, wordNumberStr] =
-					wordKey.split(":");
+					timing.key.split(":");
 				const chapterNumber = Number(chapterNumberStr);
 				const verseNumber = Number(verseNumberStr);
 				const wordNumber = Number(wordNumberStr);
 				const verseKey = `${chapterNumber}:${verseNumber}`;
 
-				words[wordKey] = fullWords[wordKey];
-				translation[verseKey] = fullTranslation[verseKey];
+				const chunks = fullTranslation[verseKey].chunks;
 
-				const segments = translation[verseKey].segments;
-				const lastWordNumber = segments[segments.length - 1].word_range.end + 1;
-				if (wordNumber == lastWordNumber - 1) {
-					const lastWordKey = `${verseKey}:${lastWordNumber}`;
+				let chunkIndex = 0;
+				let isLastChunk = false;
+				for (let i = 0; i < chunks.length; i++) {
+					const chunk = chunks[i];
+					const firstSegment = chunk[0];
+					const lastSegment = chunk[chunk.length - 1];
+
+					if (
+						wordNumber >= firstSegment.word_range.start &&
+						wordNumber <= lastSegment.word_range.end
+					) {
+						chunkIndex = i;
+						isLastChunk = i === chunks.length - 1;
+						break;
+					}
+				}
+
+				return {
+					...timing,
+					type: timing.type,
+					verseKey,
+					chapterNumber,
+					verseNumber,
+					wordNumber,
+					chunkIndex,
+					isLastChunk,
+				} satisfies TimingWord;
+		}
+	});
+
+	for (const [timingIndex, timing] of timings.entries()) {
+		console.log(timingIndex, timing);
+		switch (timing.type) {
+			case "phrase":
+				const previousWord =
+					timings
+						.slice(0, timingIndex)
+						.reverse()
+						.find((t) => t.type === "word") || null;
+				const nextWord =
+					timings.slice(timingIndex).find((t) => t.type === "word") ||
+					null;
+				timing.previousWord = previousWord;
+				timing.nextWord = nextWord;
+				break;
+			case "word": {
+				words[timing.key] = fullWords[timing.key];
+				translation[timing.verseKey] = fullTranslation[timing.verseKey];
+				metadata[timing.chapterNumber] =
+					fullMetadata[timing.chapterNumber];
+
+				const segments = translation[timing.verseKey].segments;
+				const lastWordNumber =
+					segments[segments.length - 1].word_range.end + 1;
+				if (timing.wordNumber === lastWordNumber - 1) {
+					const lastWordKey = `${timing.verseKey}:${lastWordNumber}`;
 					words[lastWordKey] = fullWords[lastWordKey];
 				}
-			}
-		}
-	}
 
-	for (const verseKey in translation) {
-		translation[verseKey].chunks = generateChunks(
-			translation[verseKey].segments,
-			props.max_words,
-		);
-	}
-
-	const timings: BaseTiming[] = rawTimings.map((timing) => {
-		timing.start *= props.fps / 1000;
-		timing.end *= props.fps / 1000;
-
-		if (timing.type === "phrase") {
-			return timing;
-		}
-
-		const [chapterNumberStr, verseNumberStr, wordNumberStr] =
-			timing.key.split(":");
-		const wordNumber = Number(wordNumberStr);
-		const verseKey = `${chapterNumberStr}:${verseNumberStr}`;
-		const chunks = translation[verseKey].chunks;
-
-		if (!chunks) return timing;
-
-		let chunkIndex = 0;
-		let isLastChunk = false;
-		for (let i = 0; i < chunks.length; i++) {
-			const chunk = chunks[i];
-			const firstSegment = chunk[0];
-			const lastSegment = chunk[chunk.length - 1];
-
-			if (
-				wordNumber >= firstSegment.word_range.start &&
-				wordNumber <= lastSegment.word_range.end
-			) {
-				chunkIndex = i;
-				isLastChunk = i === chunks.length - 1;
 				break;
 			}
 		}
-
-		return {
-			...timing,
-			chunkIndex,
-			isLastChunk,
-		};
-	});
+	}
 
 	const input = new Input({
 		formats: ALL_FORMATS,
@@ -122,6 +155,7 @@ export const calculateMetadata: CalculateMetadataFunction<
 			timings,
 			words,
 			translation,
+			metadata,
 		},
 	};
 };
@@ -132,7 +166,8 @@ const generateChunks = (segments: Segment[] = [], maxWords: number) => {
 	let currentChunk: Segment[] = [];
 	let currentWordCount = 0;
 	for (const segment of segments) {
-		const segmentLength = segment.word_range.end - segment.word_range.start + 1;
+		const segmentLength =
+			segment.word_range.end - segment.word_range.start + 1;
 		const nextWordCount = currentWordCount + segmentLength;
 		if (nextWordCount > maxWords && currentChunk.length > 0) {
 			chunks.push(currentChunk);
@@ -193,4 +228,9 @@ export const loadFonts = async (fonts_path: string, handle: number) => {
 		await loadFont({ ...font, url: staticFile(font.url) });
 	}
 	continueRender(handle);
+};
+
+// Only works for a single word
+export const titleCase = (input: string) => {
+	return input[0].toUpperCase() + input.slice(1).toLowerCase();
 };
