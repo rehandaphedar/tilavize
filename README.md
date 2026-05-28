@@ -2,6 +2,14 @@
 
 tilavize is a program for "televizing tilawahs" i.e. generating videos of Qurʿān recitations.
 
+# Examples
+
+Verse 1:1:
+https://git.sr.ht/~rehandaphedar/tilavize/blob/main/examples/001001.webm
+
+Chapter 85:
+https://git.sr.ht/~rehandaphedar/tilavize/blob/main/examples/085.webm
+
 # Installation
 
 Clone the repository:
