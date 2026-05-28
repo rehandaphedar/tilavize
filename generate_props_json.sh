@@ -27,6 +27,6 @@ jq -cM -n \
       audio_url: $audio_url,
       timings_url: $timings_url,
       words_path: $words_path,
-      translation_path: $translation_path
+      translation_path: $translation_path,
       metadata_path: $metadata_path
     }'
