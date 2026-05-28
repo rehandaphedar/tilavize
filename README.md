@@ -1,6 +1,6 @@
 # Introduction
 
-tilavize is a program for "televizing tilawahs" i.e. generating videos of Qurʿān recitations.
+tilavize is a program to "televize tilawahs" i.e. generate videos of Qurʿān recitations.
 
 # Examples
 
