@@ -226,7 +226,6 @@ export const loadFonts = async (fonts_path: string, handle: number) => {
 	continueRender(handle);
 };
 
-// Only works for a single word
-export const titleCase = (input: string) => {
+export const titleCaseWord = (input: string) => {
 	return input[0].toUpperCase() + input.slice(1).toLowerCase();
 };

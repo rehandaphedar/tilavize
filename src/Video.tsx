@@ -10,7 +10,7 @@ import {
 	TimingPhrase,
 	MetadataChapter,
 } from "./schemas";
-import { loadFonts, useActiveTiming, titleCase } from "./utils";
+import { loadFonts, useActiveTiming, titleCaseWord } from "./utils";
 import clsx from "clsx";
 
 export const Video: React.FC<VideoMetadata> = ({
@@ -122,7 +122,8 @@ const PhraseChunk: React.FC<{
 			</div>
 			<div className="font-[EB_Garamond] text-left w-fit mx-auto">
 				<div>
-					Revealed in {titleCase(metadataChapter.revelation_place)}
+					Revealed in{" "}
+					{titleCaseWord(metadataChapter.revelation_place)}
 				</div>
 				<div>Revelation Order: {metadataChapter.revelation_order}</div>
 			</div>
