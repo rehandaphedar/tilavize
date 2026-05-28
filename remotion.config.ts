@@ -5,6 +5,7 @@ Config.overrideWebpackConfig(enableTailwind);
 
 Config.setChromiumDisableWebSecurity(true);
 Config.setChromiumIgnoreCertificateErrors(true);
+Config.setChromiumDarkMode(true);
 
 Config.setCodec("vp9");
 Config.setPixelFormat("yuva420p");
