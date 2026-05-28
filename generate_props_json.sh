@@ -6,7 +6,7 @@ words_path="data/qpc-hafs-word-by-word.json"
 translation_path="data/en-sahih-international-simple.json"
 metadata_path="data/quran-metadata-surah-name.json"
 
-while getopts "a:t:w:r:" opt; do
+while getopts "a:t:w:r:m:" opt; do
   case "$opt" in
     a) audio_url="$OPTARG" ;;
     t) timings_url="$OPTARG" ;;
