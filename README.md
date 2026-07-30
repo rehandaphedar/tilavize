@@ -105,11 +105,3 @@ pnpm exec remotion render \
       -t 'http://localhost:8000/001001.json'
   )"
 ```
-
-# Dark Mode Glitch
-
-In the default `remotion.config.ts`, `Config.setChromiumDarkMode(true)` has been included.
-However, it does not seem to have an effect.
-This has been reported in [remotion/7766](https://github.com/remotion-dev/remotion/issues/7766).
-
-Therefore, you should set `Dark Mode` to true in `Render -> Video -> Other -> Dark Mode` or append `--dark-mode` to `pnpm exec remotion render` if your styling requires it until the issue is fixed.
