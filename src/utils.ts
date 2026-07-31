@@ -42,26 +42,30 @@ export const calculateMetadata: CalculateMetadataFunction<
 	const translation: Record<string, TranslationVerse> = {};
 	const metadata: Record<string, MetadataChapter> = {};
 
-	for (const verseKey in fullTranslation) {
-		fullTranslation[verseKey].chunks = generateChunks(
-			fullTranslation[verseKey].segments,
-			props.max_words,
-		);
-	}
+	const timings: Timing[] = [];
 
-	const timings: Timing[] = rawTimings.map((timing): Timing => {
+	const pendingPhrases: TimingPhrase[] = [];
+	let previousWord: TimingWord | null = null;
+
+	for (const timing of rawTimings) {
 		timing.start *= props.fps / 1000;
 		timing.end *= props.fps / 1000;
 
 		switch (timing.type) {
-			case "phrase":
-				return {
+			case "phrase": {
+				const phrase = {
 					...timing,
 					type: timing.type,
-					previousWord: null,
+					previousWord,
 					nextWord: null,
 				} satisfies TimingPhrase;
-			case "word":
+
+				pendingPhrases.push(phrase);
+				timings.push(phrase);
+				break;
+			}
+
+			case "word": {
 				const [chapterNumberStr, verseNumberStr, wordNumberStr] =
 					timing.key.split(":");
 				const chapterNumber = Number(chapterNumberStr);
@@ -69,8 +73,23 @@ export const calculateMetadata: CalculateMetadataFunction<
 				const wordNumber = Number(wordNumberStr);
 				const verseKey = `${chapterNumber}:${verseNumber}`;
 
-				const chunks = fullTranslation[verseKey].chunks;
+				if (!words[timing.key]) {
+					words[timing.key] = fullWords[timing.key];
+				}
+				if (!translation[verseKey]) {
+					translation[verseKey] = {
+						...fullTranslation[verseKey],
+						chunks: generateChunks(
+							fullTranslation[verseKey].segments,
+							props.max_words,
+						),
+					};
+				}
+				if (!metadata[chapterNumber]) {
+					metadata[chapterNumber] = fullMetadata[chapterNumber];
+				}
 
+				const chunks = translation[verseKey].chunks;
 				let chunkIndex = 0;
 				let isLastChunk = false;
 				for (let i = 0; i < chunks.length; i++) {
@@ -88,7 +107,7 @@ export const calculateMetadata: CalculateMetadataFunction<
 					}
 				}
 
-				return {
+				const word = {
 					...timing,
 					type: timing.type,
 					verseKey,
@@ -98,35 +117,22 @@ export const calculateMetadata: CalculateMetadataFunction<
 					chunkIndex,
 					isLastChunk,
 				} satisfies TimingWord;
-		}
-	});
 
-	for (const [timingIndex, timing] of timings.entries()) {
-		switch (timing.type) {
-			case "phrase":
-				const previousWord =
-					timings
-						.slice(0, timingIndex)
-						.reverse()
-						.find((t) => t.type === "word") || null;
-				const nextWord =
-					timings.slice(timingIndex).find((t) => t.type === "word") ||
-					null;
-				timing.previousWord = previousWord;
-				timing.nextWord = nextWord;
-				break;
-			case "word": {
-				words[timing.key] = fullWords[timing.key];
-				translation[timing.verseKey] = fullTranslation[timing.verseKey];
-				metadata[timing.chapterNumber] =
-					fullMetadata[timing.chapterNumber];
+				for (const phrase of pendingPhrases) {
+					phrase.nextWord = word;
+				}
+				pendingPhrases.length = 0;
+				previousWord = word;
+				timings.push(word);
 
-				const segments = translation[timing.verseKey].segments;
+				const segments = translation[verseKey].segments;
 				const lastWordNumber =
 					segments[segments.length - 1].word_range.end + 1;
-				if (timing.wordNumber === lastWordNumber - 1) {
-					const lastWordKey = `${timing.verseKey}:${lastWordNumber}`;
-					words[lastWordKey] = fullWords[lastWordKey];
+				if (wordNumber === lastWordNumber - 1) {
+					const lastWordKey = `${verseKey}:${lastWordNumber}`;
+					if (!words[lastWordKey]) {
+						words[lastWordKey] = fullWords[lastWordKey];
+					}
 				}
 
 				break;
